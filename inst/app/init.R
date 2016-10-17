@@ -32,7 +32,9 @@ options(radiant.basics_ui =
 	    "----", "Tables",
 	    tabPanel("Goodness of fit", uiOutput("goodness")),
 	    tabPanel("Cross-tabs", uiOutput("cross_tabs")),
-	    tabPanel("Correlation", uiOutput("correlation"))
+	    tabPanel("Correlation", uiOutput("correlation")),
+	    "____","Text",
+	    tabPanel("Word cloud", uiOutput("word_cloud"))
     )
   )
 )

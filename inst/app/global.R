@@ -1,4 +1,6 @@
 ## sourcing from radiant.data
+library(tm)
+library(wordcloud)
 options(radiant.path.data = system.file(package = "radiant.data"))
 source(file.path(getOption("radiant.path.data"), "app/global.R"), encoding = getOption("radiant.encoding", default = "UTF-8"), local = TRUE)
 
