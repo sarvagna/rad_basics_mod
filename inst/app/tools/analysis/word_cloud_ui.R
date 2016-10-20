@@ -19,7 +19,9 @@ output$ui_word_cloud <- renderUI({
       sliderInput("max",
                   "Maximum Number of Words:",
                   min = 1,  max = 300,  value = 100)
-    )
+    ),
+    help_modal("Word cloud help", "wc_help",
+               help_file = inclMD(file.path(getOption("radiant.path.basics"),"app/tools/help/clt.md")))
   )
 })
 
@@ -28,13 +30,18 @@ wc_plot_width <- function() 700
 
 ## output is called from the main radiant ui.R
 output$word_cloud <- renderUI({
+  register_print_output("summary_wc_calc", ".summary_wc_calc")
+
   register_plot_output("plot_word_cloud", ".plot_word_cloud",
                        height_fun = "wc_plot_height",
                        width_fun = "wc_plot_width")
 
-  wc_output_panel<- tabPanel("Plot",
+  wc_output_panel<- tagList(
+  tabPanel("Summary", verbatimTextOutput("summary_wc_calc")),
+  tabPanel("Plot",
            plot_downloader("wc_download", height = wc_plot_height()),
            plotOutput("plot_word_cloud", width = "100%", height = "100%"))
+  )
 
   stat_tab_panel(menu = "Basics > Word cloud",
                  tool = "Word cloud generator",
@@ -44,22 +51,20 @@ output$word_cloud <- renderUI({
 
 })
 
+.summary_wc_calc <- reactive({
+  str(terms())
+})
 
 terms<- eventReactive(input$wc_plot, {
-
   if(is.null(input$selection)) return("Please choose a book")
   withProgress({
     setProgress(message = "Processing corpus...")
     getTermMatrix(input$selection)
   })
-  clt(input$clt_dist, input$clt_n, input$clt_m, input$clt_stat)
 })
 
 getTermMatrix <- function(book) {
-  if (!(book %in% books))
-    stop("Unknown book")
-
-  text <- readLines(sprintf("./data/%s.txt", book),
+  text <- readLines(sprintf("./%s.txt", book),
                     encoding="UTF-8")
 
   myCorpus = Corpus(VectorSource(text))
@@ -91,7 +96,8 @@ getTermMatrix <- function(book) {
   req(input$freq)
   req(input$max)
 
-  plot <-wordcloud(names(terms()), terms(), scale=c(4,0.5),
+  #plot(terms,type="values",shiny=T)
+  wordcloud(names(terms), terms, scale=c(4,0.5),
                   min.freq = input$freq, max.words=input$max,
                   colors=brewer.pal(8, "Dark2"))
 }
